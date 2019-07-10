@@ -10,21 +10,68 @@ import UIKit
 
 class LoginVC: UIViewController {
 
+    //MARK: - Outlets
+    @IBOutlet weak var emailTextField: InsetTextField!
+    
+    @IBOutlet weak var passwordTextField: InsetTextField!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        
+    }
+    
+    //MARK: - Actions
+    @IBAction func signInBtnWasPressed(_ sender: Any) {
+        //check textfields
+        guard let email = emailTextField.text else { return }
+        guard let password = passwordTextField.text else { return }
+        
+        if email.isEmpty || password.isEmpty {
+            alertMassage(message: "Please enter your email and password!")
+        }
+        //login with email and password
+        AuthServise.instance.loginUser(withEmail: email, andPassword: password) { [weak self] (success, loginError) in
+            if success {
+                self?.dismiss(animated: true, completion: nil)
+            } else {
+                print(String(describing: loginError?.localizedDescription))
+                self?.alertMassage(message: "Please enter your correct email and password!")
+            }
+            //register new user
+            AuthServise.instance.registerUser(withEmail: email, andPassword: password, userCreationComplete: { (success, registrationError) in
+                if success {
+                    AuthServise.instance.loginUser(withEmail: email, andPassword: password, loginComplete: { (success, nil) in
+                        
+                    })
+                } else {
+                    print(String(describing: registrationError?.localizedDescription))
+                    self?.alertMassage(message: "Please enter your correct email and password!")
+                }
+            })
+            
+        }
+    }
+    
+    
+    @IBAction func closeBtnWasPressed(_ sender: Any) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    
+    //MARK: - Alert massage
+    func alertMassage(message: String) {
+        let alertController = UIAlertController(title: "", message: message, preferredStyle: .alert)
+        let alertAction = UIAlertAction(title: "OK", style: .default) { (action) in
+            
+        }
+        alertController.addAction(alertAction)
+        present(alertController, animated: true, completion: nil)
     }
     
 
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
+}
+extension LoginVC: UITextFieldDelegate {
+    
+    
 }

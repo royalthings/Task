@@ -12,4 +12,11 @@ target 'TaskList' do
   pod 'Firebase/Database'
   pod 'Firebase/Auth'
 
+  pod 'FacebookCore'
+  pod 'FacebookLogin'
+  pod 'FacebookShare'
+
+  pod 'InstagramLogin'
+  pod 'Alamofire'
+
 end
