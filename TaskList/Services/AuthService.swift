@@ -52,6 +52,24 @@ import Firebase
         
     }
     
+    func loginInstagramUser(withCustomToken token: String, loginComplete: @escaping (_ status: Bool, _ error: Error?) -> ()) {
+        
+        Auth.auth().signIn(withCustomToken: token) { (user, error) in
+           print(user)
+            if error != nil {
+                loginComplete(false, error)
+                return
+            }
+            loginComplete(true, nil)
+            let userData = ["provider": user!.user.providerID, "email": user!.user.email]
+            DataService.instance.createDBUser(uid: user!.user.uid, userData: userData as Dictionary<String, Any>)
+            
+        }
+        
+    }
+    
+    
+    
     
  }
 

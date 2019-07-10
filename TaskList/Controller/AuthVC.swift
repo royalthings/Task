@@ -71,8 +71,78 @@ class AuthVC: UIViewController {
     }
     //sign in with instagram
     @IBAction func instagramSignInBtnWasPressed(_ sender: Any) {
+        instagramLogin = InstagramLoginViewController(clientId: InstagramIDS.INSTAGRAM_CLIENT_ID, redirectUri: InstagramIDS.INSTAGRAM_REDIRECT_URI)
+        instagramLogin.delegate = self
+        instagramLogin.scopes = [.all]
+        
+        instagramLogin.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(dismissLoginViewController))
+        instagramLogin.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refreshPage))
+        present(UINavigationController(rootViewController: instagramLogin), animated: true, completion: nil)
+  
+    }
+    func showAlertView(title: String, message: String) {
+        let alertView = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertView.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: nil))
+        present(alertView, animated: true)
+    }
+    
+    @objc func dismissLoginViewController() {
+        instagramLogin.dismiss(animated: true)
+    }
+    
+    @objc func refreshPage() {
+        instagramLogin.reloadPage()
+    }
+    
+    
+}
+
+extension AuthVC: InstagramLoginViewControllerDelegate {
+    func instagramLoginDidFinish(accessToken: String?, error: InstagramError?) {
+        dismissLoginViewController()
+        
+        if accessToken != nil {
+            guard let token = accessToken else { return }
+             
+            
+            
+            Alamofire.request("https://api.instagram.com/v1/users/self/?access_token=\(token)", method: .get).responseJSON { response in
+                switch response.result {
+                case .success(let value):
+                    print(value)
+                    
+                    guard let json = response.result.value as? [String: Any] else { return }
+                    
+                    guard let data = json["data"] as? [String: Any] else { return }
+                    
+                    guard let id = data["id"] as? String else { return }
+                    
+                    guard let userName = data["username"] as? String else { return }
+                    
+                    print(id)
+                    print(userName)
+                    
+
+                    
+                    AuthServise.instance.loginInstagramUser(withCustomToken: token, loginComplete: { [weak self] (success, loginError) in
+                        if success {
+                            self?.dismiss(animated: true, completion: nil)
+                        } else {
+                            print(String(describing: loginError?.localizedDescription))
+                        }
+                    })
+
+                case .failure(let error):
+                    print(error)
+                }
+            }
+        } else {
+            showAlertView(title: "\(error!.localizedDescription) 👎", message: "")
+        }
         
         
         
     }
+    
+    
 }
