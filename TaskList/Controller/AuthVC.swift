@@ -100,37 +100,42 @@ class AuthVC: UIViewController {
 extension AuthVC: InstagramLoginViewControllerDelegate {
     func instagramLoginDidFinish(accessToken: String?, error: InstagramError?) {
         dismissLoginViewController()
-        
         if accessToken != nil {
             guard let token = accessToken else { return }
-             
-            
-            
-            Alamofire.request("https://api.instagram.com/v1/users/self/?access_token=\(token)", method: .get).responseJSON { response in
-                switch response.result {
-                case .success(let value):
-                    print(value)
-                    
-                    guard let json = response.result.value as? [String: Any] else { return }
-                    
-                    guard let data = json["data"] as? [String: Any] else { return }
-                    
-                    guard let id = data["id"] as? String else { return }
-                    
-                    guard let userName = data["username"] as? String else { return }
-                    
-                    print(id)
-                    print(userName)
-                    
 
+            let url = String(format: "https://api.instagram.com/v1/users/self/?access_token=%@", token)
+            Alamofire.request(url, method: .get).responseJSON { response in
+                switch response.result {
+                case .success:
+                    guard let json = response.result.value as? [String: Any] else { return }
+
+                    guard let data = json["data"] as? [String: Any] else { return }
+
+                    guard let id = data["id"] as? String else { return }
+
+                    guard let userName = data["username"] as? String else { return }
+                    DispatchQueue.main.async {
+                        AuthServise.instance.loginInstagramUser(withUserName: userName, andUserID: id, loginComplete: { [weak self] (success, loginError) in
+                            if success {
+                                self?.dismiss(animated: true, completion: nil)
+                            } else {
+                                print(String(describing: loginError?.localizedDescription))
+                            }
+                        })
+                    }
+
+                    self.dismiss(animated: true, completion: nil)
+//                    let userData = ["provider": user!.user.providerID, "email": user!.user.email]
+//                    DataService.instance.createDBUser(uid: user!.user.uid, userData: userData as Dictionary<String, Any>)
                     
-                    AuthServise.instance.loginInstagramUser(withCustomToken: token, loginComplete: { [weak self] (success, loginError) in
-                        if success {
-                            self?.dismiss(animated: true, completion: nil)
-                        } else {
-                            print(String(describing: loginError?.localizedDescription))
-                        }
-                    })
+                    
+//                    AuthServise.instance.loginInstagramUser(withCustomToken: token, loginComplete: { [weak self] (success, loginError) in
+//                        if success {
+//                            self?.dismiss(animated: true, completion: nil)
+//                        } else {
+//                            print(String(describing: loginError?.localizedDescription))
+//                        }
+//                    })
 
                 case .failure(let error):
                     print(error)
@@ -139,10 +144,5 @@ extension AuthVC: InstagramLoginViewControllerDelegate {
         } else {
             showAlertView(title: "\(error!.localizedDescription) 👎", message: "")
         }
-        
-        
-        
     }
-    
-    
 }

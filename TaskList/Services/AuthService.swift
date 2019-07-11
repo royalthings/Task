@@ -46,30 +46,18 @@ import Firebase
                 return
             }
             loginComplete(true, nil)
-            let userData = ["provider": user!.user.providerID, "email": user!.user.email]
+            let userData = ["provider": "Facebook", "email": user!.user.email]
             DataService.instance.createDBUser(uid: user!.user.uid, userData: userData as Dictionary<String, Any>)
         }
         
     }
     
-    func loginInstagramUser(withCustomToken token: String, loginComplete: @escaping (_ status: Bool, _ error: Error?) -> ()) {
+    func loginInstagramUser(withUserName userName: String, andUserID id: String, loginComplete: @escaping (_ status: Bool, _ error: Error?) -> ()) {
         
-        Auth.auth().signIn(withCustomToken: token) { (user, error) in
-           print(user)
-            if error != nil {
-                loginComplete(false, error)
-                return
-            }
-            loginComplete(true, nil)
-            let userData = ["provider": user!.user.providerID, "email": user!.user.email]
-            DataService.instance.createDBUser(uid: user!.user.uid, userData: userData as Dictionary<String, Any>)
-            
-        }
+        let userData = ["provider": "Instagram", "userNmae": userName]
+        DataService.instance.createDBUser(uid: id, userData: userData as Dictionary<String, Any>)
         
     }
-    
-    
-    
     
  }
 

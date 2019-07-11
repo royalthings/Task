@@ -60,7 +60,7 @@ class TaskVC: UIViewController {
             guard let textField = alertController.textFields?.first, textField.text != "" else { return }
             guard let userId = Auth.auth().currentUser?.uid else { return }
             guard let massage = textField.text else { return }
-           
+            print(userId)
             //MARK: - create task
             DataService.instance.uploadTask(withMessage: massage, forUID: userId, completed: false, addComplete: { (isComplete) in
                 if isComplete {
